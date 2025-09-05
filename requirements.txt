@@ -1,0 +1,7 @@
+echo "streamlit>=1.28.0
+pandas>=1.5.0
+pillow>=9.0.0
+requests>=2.28.0
+regex>=2022.10.31
+markdown2>=2.4.0
+PyJWT>=2.8.0" > requirements.txt
