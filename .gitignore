@@ -6,8 +6,10 @@ __pycache__/
 .vscode/
 .env
 .venv/
+venv/
+env/
+.pytest_cache/
 *.log
 *.sqlite3
-*.db
-*.egg-info/
 .idea/
+node_modules/
