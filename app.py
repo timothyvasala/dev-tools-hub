@@ -5,22 +5,16 @@ from pathlib import Path
 # Ensure project root is in path
 sys.path.append(str(Path(__file__).parent))
 
-# Import all tool modules
+# Import modules
 from tools import (
-    jwt_decoder,
-    json_formatter,
-    timestamp_converter,
-    uuid_generator,
-    base64_converter,
-    url_encoder,
-    regex_tester,
-    markdown_converter,
-    color_palette,
-    robots_generator
+    jwt_decoder, json_formatter, timestamp_converter,
+    uuid_generator, base64_converter, url_encoder,
+    regex_tester, markdown_converter,
+    color_palette, robots_generator
 )
 from utils.common import add_footer
 
-# Configure page
+# ── 1. Configure page BEFORE any markdown──
 st.set_page_config(
     page_title="DevTools Hub - Free Developer Utilities",
     page_icon="🛠️",
@@ -28,30 +22,42 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ── 2. Inject Global CSS for theming ────────────────────────────────────────────
+st.markdown(
+    """
+    <style>
+      .main-header { text-align:center; color:#00d4aa; font-size:2.5rem; margin-bottom:0.5rem; }
+      .sub-header  { text-align:center; color:#fafafa; font-size:1.2rem; margin-bottom:2rem; }
+      .tool-card   { background:#262730; padding:1rem; border-radius:0.5rem; margin:0.5rem 0; border-left:4px solid #00d4aa; }
+      .sidebar .sidebar-content { background:#0e1117; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+# ────────────────────────────────────────────────────────────────────────────────
+
 def main():
-    # Sidebar title
+    # 3. Use your styled headers
+    st.markdown('<div class="main-header">DevTools Hub</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">Professional, free developer utilities</div>', unsafe_allow_html=True)
+
+    # Sidebar navigation
     st.sidebar.title("🔧 Developer Tools")
     st.sidebar.markdown("---")
 
-    # Define tools menu
     tools_menu = {
-        "🔑 JWT Decoder": "jwt",
-        "📝 JSON Formatter": "json",
-        "⏰ Timestamp Converter": "timestamp",
-        "🆔 UUID Generator": "uuid",
-        "🔤 Base64 Converter": "base64",
-        "🔗 URL Encoder": "url",
-        "🔍 Regex Tester": "regex",
-        "📄 Markdown Converter": "markdown",
-        "🎨 Color Palette": "color",
-        "🤖 Robots.txt Generator": "robots"
+        "🔑 JWT Decoder": "jwt", "📝 JSON Formatter": "json",
+        "⏰ Timestamp Converter": "timestamp","🆔 UUID Generator": "uuid",
+        "🔤 Base64 Converter": "base64","🔗 URL Encoder": "url",
+        "🔍 Regex Tester": "regex","📄 Markdown Converter": "markdown",
+        "🎨 Color Palette": "color","🤖 Robots.txt Generator": "robots"
     }
 
-    # Sidebar selectbox
     selected = st.sidebar.selectbox("Choose a tool:", list(tools_menu.keys()))
     tool_key = tools_menu[selected]
 
-    # Route to the selected tool
+    # 4. Wrap each tool render in a styled div
+    st.markdown('<div class="tool-card">', unsafe_allow_html=True)
     if tool_key == "jwt":
         jwt_decoder.render()
     elif tool_key == "json":
@@ -72,8 +78,9 @@ def main():
         color_palette.render()
     elif tool_key == "robots":
         robots_generator.render()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Footer on all pages
+    # Footer
     add_footer()
 
 if __name__ == "__main__":

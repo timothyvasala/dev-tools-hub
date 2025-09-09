@@ -1,6 +1,24 @@
 import streamlit as st
 import base64
-from utils.common import setup_page, show_result, handle_file_upload, validate_input
+from utils.common import setup_page, show_result, handle_file_upload, validate_input, add_footer
+
+# ── Cache Base64 operations ────────────────────────────────────────────────────
+@st.cache_data(show_spinner=False)
+def encode_text(data: str) -> str:
+    return base64.b64encode(data.encode()).decode()
+
+@st.cache_data(show_spinner=False)
+def decode_text(data: str) -> str:
+    return base64.b64decode(data).decode()
+
+@st.cache_data(show_spinner=False)
+def encode_file_content(data: str) -> str:
+    return base64.b64encode(data.encode()).decode()
+
+@st.cache_data(show_spinner=False)
+def decode_file_content(data: str) -> str:
+    return base64.b64decode(data).decode()
+# ────────────────────────────────────────────────────────────────────────────────
 
 def render():
     # 1. Header
@@ -20,7 +38,7 @@ def render():
             if not valid:
                 st.error(f"❌ {msg}")
             else:
-                encoded = base64.b64encode(text.encode()).decode()
+                encoded = encode_text(text)
                 show_result(encoded)
                 st.download_button("📥 Download as .txt", encoded, "encoded.txt", "text/plain")
 
@@ -33,7 +51,7 @@ def render():
                 st.error(f"❌ {msg}")
             else:
                 try:
-                    decoded = base64.b64decode(b64).decode()
+                    decoded = decode_text(b64)
                     show_result(decoded)
                     st.download_button("📥 Download as .txt", decoded, "decoded.txt", "text/plain")
                 except Exception as e:
@@ -41,23 +59,22 @@ def render():
 
     # 5. Encode File
     elif mode == "Encode File":
-        content = handle_file_upload(max_mb=5)
+        content = handle_file_upload(max_mb=10)
         if content and st.button("🔒 Encode File"):
-            encoded = base64.b64encode(content.encode()).decode()
+            encoded = encode_file_content(content)
             show_result(encoded)
             st.download_button("📥 Download as .txt", encoded, "file_encoded.txt", "text/plain")
 
     # 6. Decode File
     else:  # mode == "Decode File"
-        b64file = handle_file_upload(["txt"], max_mb=5)
+        b64file = handle_file_upload(["txt"], max_mb=10)
         if b64file and st.button("🔓 Decode File"):
             try:
-                decoded = base64.b64decode(b64file).decode()
+                decoded = decode_file_content(b64file)
                 show_result(decoded)
                 st.download_button("📥 Download as .txt", decoded, "file_decoded.txt", "text/plain")
             except Exception as e:
                 st.error(f"❌ Decoding error: {e}")
 
     # 7. Footer
-    from utils.common import add_footer
     add_footer()

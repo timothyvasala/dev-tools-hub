@@ -2,7 +2,28 @@ import streamlit as st
 import jwt
 import json
 import base64
-from utils.common import setup_page, show_result, handle_file_upload
+from utils.common import setup_page, show_result, handle_file_upload, add_footer
+
+# ── Cache JWT decoding ─────────────────────────────────────────────────────────
+@st.cache_data(show_spinner=False)
+def decode_jwt(token: str) -> tuple[dict, dict]:
+    """
+    Decode JWT header and payload without verifying signature.
+    Returns (header_dict, payload_dict).
+    Raises on invalid format or decode errors.
+    """
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise ValueError("Invalid JWT format (must have 3 segments).")
+
+    def fix_padding(segment: str) -> str:
+        return segment + "=" * (-len(segment) % 4)
+
+    header_b64, payload_b64, _ = parts
+    header = json.loads(base64.urlsafe_b64decode(fix_padding(header_b64)))
+    payload = json.loads(base64.urlsafe_b64decode(fix_padding(payload_b64)))
+    return header, payload
+# ────────────────────────────────────────────────────────────────────────────────
 
 def render():
     # 1. Page header
@@ -21,13 +42,12 @@ def render():
             tokens = [txt.strip()]
 
     elif method == "Upload File":
-        content = handle_file_upload(["txt","json"], max_mb=2)
+        content = handle_file_upload(["txt", "json"], max_mb=5)
         if content:
-            # Try JSON array else newline-split
             try:
                 arr = json.loads(content)
                 tokens = arr if isinstance(arr, list) else [str(arr)]
-            except:
+            except json.JSONDecodeError:
                 tokens = [line.strip() for line in content.split("\n") if line.strip()]
 
     else:  # Bulk Paste
@@ -39,27 +59,12 @@ def render():
     if tokens and st.button("🔓 Decode"):
         for idx, token in enumerate(tokens, 1):
             st.markdown(f"**Token #{idx}:**")
-            parts = token.split(".")
-            if len(parts) != 3:
-                st.error("❌ Invalid JWT format (must have 3 segments).")
-                continue
-
-            header_b64, payload_b64, _ = parts
-            # Fix padding
-            def fix(b): return b + "=" * (-len(b) % 4)
-
             try:
-                # Decode header
-                header = json.loads(base64.urlsafe_b64decode(fix(header_b64)))
+                header, payload = decode_jwt(token)
                 show_result(json.dumps(header, indent=2), language="json")
-
-                # Decode payload
-                payload = json.loads(base64.urlsafe_b64decode(fix(payload_b64)))
                 show_result(json.dumps(payload, indent=2), language="json")
-
             except Exception as e:
-                st.error(f"❌ Error decoding token: {e}")
+                st.error(f"❌ {e}")
 
     # 4. Footer
-    from utils.common import add_footer
     add_footer()

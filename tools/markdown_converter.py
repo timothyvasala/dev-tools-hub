@@ -1,6 +1,13 @@
 import streamlit as st
 import markdown2
-from utils.common import setup_page, show_result, handle_file_upload, validate_input
+from utils.common import setup_page, show_result, handle_file_upload, validate_input, add_footer
+
+# ── Cache Markdown conversion ──────────────────────────────────────────────────
+@st.cache_data(show_spinner=False)
+def convert_markdown_to_html(md_text: str) -> str:
+    """Convert Markdown text to HTML."""
+    return markdown2.markdown(md_text)
+# ────────────────────────────────────────────────────────────────────────────────
 
 def render():
     # 1. Header
@@ -19,7 +26,7 @@ def render():
             placeholder="# Title\n\nSome **bold** text."
         )
     else:
-        content = handle_file_upload(["md", "txt"], max_mb=5)
+        content = handle_file_upload(["md", "txt"], max_mb=10)
         if content:
             md_text = content
 
@@ -30,7 +37,7 @@ def render():
             st.error(f"❌ {msg}")
         else:
             try:
-                html = markdown2.markdown(md_text)
+                html = convert_markdown_to_html(md_text)
                 st.success("✅ Conversion successful!")
                 show_result(html, language="html")
                 st.download_button(
@@ -43,5 +50,4 @@ def render():
                 st.error(f"❌ Conversion error: {e}")
 
     # 4. Footer
-    from utils.common import add_footer
     add_footer()

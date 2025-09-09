@@ -1,6 +1,18 @@
 import streamlit as st
 import json
-from utils.common import setup_page, show_result, handle_file_upload, validate_input
+from utils.common import setup_page, show_result, handle_file_upload, validate_input, add_footer
+
+# ── Cache heavy JSON operations ─────────────────────────────────────────────────
+@st.cache_data(show_spinner=False)
+def format_json(data: str, indent: int, sort_keys: bool, ensure_ascii: bool) -> str:
+    parsed = json.loads(data)
+    return json.dumps(parsed, indent=indent, sort_keys=sort_keys, ensure_ascii=ensure_ascii)
+
+@st.cache_data(show_spinner=False)
+def minify_json(data: str) -> str:
+    parsed = json.loads(data)
+    return json.dumps(parsed, separators=(',', ':'))
+# ────────────────────────────────────────────────────────────────────────────────
 
 def render():
     # 1. Page header
@@ -27,7 +39,7 @@ def render():
             placeholder='{"name": "Alice", "age": 30, "city": "NY"}'
         )
     else:
-        content = handle_file_upload(["json", "txt"], max_mb=5)
+        content = handle_file_upload(["json", "txt"], max_mb=10)
         if content:
             raw_json = content
 
@@ -38,13 +50,7 @@ def render():
             st.error(f"❌ {msg}")
         else:
             try:
-                parsed = json.loads(raw_json)
-                formatted = json.dumps(
-                    parsed,
-                    indent=indent,
-                    sort_keys=sort_keys,
-                    ensure_ascii=ensure_ascii
-                )
+                formatted = format_json(raw_json, indent, sort_keys, ensure_ascii)
                 st.success("✅ Valid JSON!")
                 show_result(formatted, language="json")
                 st.download_button(
@@ -63,8 +69,7 @@ def render():
     # Optional: Minify JSON
     if raw_json and st.button("🗜️ Minify JSON"):
         try:
-            parsed = json.loads(raw_json)
-            minified = json.dumps(parsed, separators=(',', ':'))
+            minified = minify_json(raw_json)
             st.success("✅ JSON Minified!")
             show_result(minified, language="json")
             st.download_button(
@@ -77,5 +82,4 @@ def render():
             st.error(f"❌ Error Minifying JSON: {e}")
 
     # 5. Footer
-    from utils.common import add_footer
     add_footer()

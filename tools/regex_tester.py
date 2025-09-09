@@ -1,6 +1,18 @@
 import streamlit as st
 import regex as re
-from utils.common import setup_page, show_result
+from utils.common import setup_page, show_result, add_footer
+
+# ── Cache regex compilation & matching ─────────────────────────────────────────
+@st.cache_data(show_spinner=False)
+def compile_regex(pattern: str, flags_value: int):
+    """Compile the regex pattern with given flags."""
+    return re.compile(pattern, flags=flags_value)
+
+@st.cache_data(show_spinner=False)
+def find_matches(compiled_regex, text: str):
+    """Find all matches of the compiled regex in the text."""
+    return compiled_regex.findall(text)
+# ────────────────────────────────────────────────────────────────────────────────
 
 def render():
     # 1. Header
@@ -16,6 +28,7 @@ def render():
         options=["IGNORECASE", "MULTILINE", "DOTALL", "VERBOSE"],
         default=[]
     )
+
     # Map flag names to re constants
     flag_value = 0
     for f in flags:
@@ -31,8 +44,8 @@ def render():
     # 4. Test button
     if st.button("✅ Test Regex"):
         try:
-            regex = re.compile(pattern, flags=flag_value)
-            matches = regex.findall(sample)
+            compiled = compile_regex(pattern, flag_value)
+            matches = find_matches(compiled, sample)
             if matches:
                 st.success(f"Found {len(matches)} match(es):")
                 for m in matches:
@@ -44,10 +57,15 @@ def render():
 
     # 5. Export option
     if st.button("📥 Export as Python Code"):
-        code = f"import regex as re\npattern = r\"{pattern}\"\nflags = {flag_value}\nregex = re.compile(pattern, flags=flags)\nmatches = regex.findall(sample_text)\n"
+        code = (
+            f"import regex as re\n"
+            f"pattern = r\"{pattern}\"\n"
+            f"flags = {flag_value}\n"
+            f"regex = re.compile(pattern, flags=flags)\n"
+            f"matches = regex.findall(sample_text)\n"
+        )
         show_result(code, language="python")
         st.download_button("Download code", code, "regex_test.py", "text/x-python")
 
     # 6. Footer
-    from utils.common import add_footer
     add_footer()
