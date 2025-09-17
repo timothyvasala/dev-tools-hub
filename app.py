@@ -32,20 +32,23 @@ st.markdown(
       .main-header { text-align:center; color:#00d4aa; font-size:2.5rem; margin-bottom:0.5rem; }
       .sub-header  { text-align:center; color:#fafafa; font-size:1.2rem; margin-bottom:2rem; }
       .tool-card   { background:#262730; padding:1rem; border-radius:0.5rem; margin:0.5rem 0; border-left:4px solid #00d4aa; }
-      .clickable-tool-card {
-        background:#262730;
-        padding:1.5rem;
-        border-radius:0.5rem;
-        margin:0.5rem 0;
-        border-left:4px solid #00d4aa;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 1px solid transparent;
+      .stButton > button {
+        background:#262730 !important;
+        border:1px solid transparent !important;
+        border-left:4px solid #00d4aa !important;
+        color:#fafafa !important;
+        padding:1.5rem !important;
+        border-radius:0.5rem !important;
+        text-align:left !important;
+        width:100% !important;
+        height:auto !important;
+        transition: all 0.3s ease !important;
       }
-      .clickable-tool-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(0, 212, 170, 0.3);
-        border: 1px solid #00d4aa;
+      .stButton > button:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 6px 20px rgba(0, 212, 170, 0.3) !important;
+        border: 1px solid #00d4aa !important;
+        background:#2a2d3a !important;
       }
       .back-button { background: #00d4aa; color: #0e1117; border: none; padding: 8px 16px; border-radius: 4px; margin-bottom: 1rem; }
     </style>
@@ -83,7 +86,7 @@ def render_home_page():
     # Search functionality
     search_col1, search_col2, search_col3 = st.columns([1, 2, 1])
     with search_col2:
-        search_term = st.text_input("🔍 Search tools...", placeholder="Type to filter tools", label_visibility="collapsed")
+        search_term = st.text_input("", placeholder="🔍 Search tools...", key="search_tools")
 
     st.markdown("Select any tool below. All tools support bulk operations, file uploads, and instant downloads.")
 
@@ -114,38 +117,16 @@ def render_home_page():
         col = col1 if i % 2 == 0 else col2
 
         with col:
-            # Create clickable card that looks like the original but is interactive
-            card_html = f"""
-            <div class="clickable-tool-card" onclick="handleToolClick('{key}')">
-                <h4 style="color:#00d4aa; margin:0 0 0.5rem 0; font-size:1.1rem;">{title}</h4>
-                <p style="color:#b0b0b0; margin:0; font-size:0.9rem; line-height:1.4;">{desc}</p>
-                <p style="color:#00d4aa; margin:0.8rem 0 0 0; font-size:0.8rem; font-weight:600;">Click to open →</p>
-            </div>
-            """
+            # Create a tall, styled button with title and description
+            button_content = f"""**{title}**
 
-            # Display the card
-            st.markdown(card_html, unsafe_allow_html=True)
+{desc}
 
-            # Invisible button for functionality (Streamlit requirement)
-            if st.button("Open", key=f"btn_{key}", label_visibility="hidden"):
+*Click to open →*"""
+
+            if st.button(button_content, key=f"btn_{key}", use_container_width=True):
                 st.session_state.current_tool = key
                 st.rerun()
-
-    # JavaScript to handle card clicks
-    st.markdown("""
-    <script>
-    function handleToolClick(toolKey) {
-        // Find the corresponding hidden button and click it
-        const buttons = document.querySelectorAll('button');
-        buttons.forEach(button => {
-            if (button.getAttribute('data-testid') && button.innerText === 'Open') {
-                // This is a workaround - in real implementation, you'd need a more reliable method
-                button.click();
-            }
-        });
-    }
-    </script>
-    """, unsafe_allow_html=True)
 
     if not filtered_tools:
         st.info("No tools found matching your search.")
@@ -185,7 +166,7 @@ def main():
             st.rerun()
 
     # 4. Wrap each tool render in a styled div
-    st.markdown('<div class="tool-card">', unsafe_allow_html=True)
+    st.markdown('<div class="tool-card">', unsafe_help_html=True)
 
     # Route to current tool
     if st.session_state.current_tool == 'home':
