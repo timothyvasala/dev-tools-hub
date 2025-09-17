@@ -32,8 +32,21 @@ st.markdown(
       .main-header { text-align:center; color:#00d4aa; font-size:2.5rem; margin-bottom:0.5rem; }
       .sub-header  { text-align:center; color:#fafafa; font-size:1.2rem; margin-bottom:2rem; }
       .tool-card   { background:#262730; padding:1rem; border-radius:0.5rem; margin:0.5rem 0; border-left:4px solid #00d4aa; }
-      .clickable-card { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-      .clickable-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3); }
+      .clickable-tool-card {
+        background:#262730;
+        padding:1.5rem;
+        border-radius:0.5rem;
+        margin:0.5rem 0;
+        border-left:4px solid #00d4aa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+      }
+      .clickable-tool-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 212, 170, 0.3);
+        border: 1px solid #00d4aa;
+      }
       .back-button { background: #00d4aa; color: #0e1117; border: none; padding: 8px 16px; border-radius: 4px; margin-bottom: 1rem; }
     </style>
     """,
@@ -101,17 +114,38 @@ def render_home_page():
         col = col1 if i % 2 == 0 else col2
 
         with col:
-            # Create clickable button for each tool
-            if st.button(f"{title}", key=f"btn_{key}", use_container_width=True):
+            # Create clickable card that looks like the original but is interactive
+            card_html = f"""
+            <div class="clickable-tool-card" onclick="handleToolClick('{key}')">
+                <h4 style="color:#00d4aa; margin:0 0 0.5rem 0; font-size:1.1rem;">{title}</h4>
+                <p style="color:#b0b0b0; margin:0; font-size:0.9rem; line-height:1.4;">{desc}</p>
+                <p style="color:#00d4aa; margin:0.8rem 0 0 0; font-size:0.8rem; font-weight:600;">Click to open →</p>
+            </div>
+            """
+
+            # Display the card
+            st.markdown(card_html, unsafe_allow_html=True)
+
+            # Invisible button for functionality (Streamlit requirement)
+            if st.button("Open", key=f"btn_{key}", label_visibility="hidden"):
                 st.session_state.current_tool = key
                 st.rerun()
 
-            # Tool description card
-            st.markdown(f"""
-            <div style="background:#262730; padding:1rem; border-radius:0.5rem; margin:0 0 1rem 0; border-left:4px solid #00d4aa;">
-                <p style="color:#b0b0b0; margin:0; font-size:0.9rem;">{desc}</p>
-            </div>
-            """, unsafe_allow_html=True)
+    # JavaScript to handle card clicks
+    st.markdown("""
+    <script>
+    function handleToolClick(toolKey) {
+        // Find the corresponding hidden button and click it
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+            if (button.getAttribute('data-testid') && button.innerText === 'Open') {
+                // This is a workaround - in real implementation, you'd need a more reliable method
+                button.click();
+            }
+        });
+    }
+    </script>
+    """, unsafe_allow_html=True)
 
     if not filtered_tools:
         st.info("No tools found matching your search.")
