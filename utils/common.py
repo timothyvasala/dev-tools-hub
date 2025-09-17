@@ -98,11 +98,10 @@ def add_footer():
     year = datetime.now().year
     st.markdown(f"""
     <div style="text-align:center; color:#666; margin-top:2rem;">
-      © {year} DevTools Hub • Made with ❤️ for developers •
-      <a href="https://github.com/timothyvasala/dev-tools-hub" target="_blank">Star on GitHub</a> •
-      Free Forever
+      © {year} DevTools Hub • Made with ❤️ for developers • Free Forever
     </div>
     """, unsafe_allow_html=True)
+
 
 # Initialize logging for security monitoring
 logging.basicConfig(
