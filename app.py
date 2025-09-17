@@ -22,7 +22,7 @@ st.set_page_config(
     page_title="DevTools Hub - Free Developer Utilities",
     page_icon="🛠️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"  # Hide sidebar by default
 )
 
 # ── 2. Inject Global CSS for theming ────────────────────────────────────────────
@@ -32,7 +32,9 @@ st.markdown(
       .main-header { text-align:center; color:#00d4aa; font-size:2.5rem; margin-bottom:0.5rem; }
       .sub-header  { text-align:center; color:#fafafa; font-size:1.2rem; margin-bottom:2rem; }
       .tool-card   { background:#262730; padding:1rem; border-radius:0.5rem; margin:0.5rem 0; border-left:4px solid #00d4aa; }
-      .sidebar .sidebar-content { background:#0e1117; }
+      .clickable-card { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+      .clickable-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3); }
+      .back-button { background: #00d4aa; color: #0e1117; border: none; padding: 8px 16px; border-radius: 4px; margin-bottom: 1rem; }
     </style>
     """,
     unsafe_allow_html=True
@@ -56,15 +58,23 @@ st.markdown(
 )
 # ────────────────────────────────────────────────────────────────────────────────
 
+# Initialize session state
+if 'current_tool' not in st.session_state:
+    st.session_state.current_tool = 'home'
+
 def render_home_page():
-    """Render the home page with tool overview"""
+    """Render the home page with clickable tool cards"""
 
     st.markdown("## 🛠️ Available Tools")
-    st.markdown("Select any tool from the sidebar to get started. All tools support bulk operations, file uploads, and instant downloads.")
 
-    # Create tool cards in a grid
-    col1, col2 = st.columns(2)
+    # Search functionality
+    search_col1, search_col2, search_col3 = st.columns([1, 2, 1])
+    with search_col2:
+        search_term = st.text_input("🔍 Search tools...", placeholder="Type to filter tools", label_visibility="collapsed")
 
+    st.markdown("Select any tool below. All tools support bulk operations, file uploads, and instant downloads.")
+
+    # Tools information
     tools_info = [
         ("🔑 JWT Decoder", "Decode JSON Web Tokens without verification", "jwt"),
         ("📝 JSON Formatter", "Format, validate, and beautify JSON data", "json"),
@@ -78,16 +88,33 @@ def render_home_page():
         ("🤖 Robots.txt Generator", "Create robots.txt for search engines", "robots")
     ]
 
-    for i, (title, desc, key) in enumerate(tools_info):
+    # Filter tools based on search
+    if search_term:
+        filtered_tools = [tool for tool in tools_info if search_term.lower() in tool[0].lower() or search_term.lower() in tool[1].lower()]
+    else:
+        filtered_tools = tools_info
+
+    # Create tool cards in a grid
+    col1, col2 = st.columns(2)
+
+    for i, (title, desc, key) in enumerate(filtered_tools):
         col = col1 if i % 2 == 0 else col2
 
         with col:
+            # Create clickable button for each tool
+            if st.button(f"{title}", key=f"btn_{key}", use_container_width=True):
+                st.session_state.current_tool = key
+                st.rerun()
+
+            # Tool description card
             st.markdown(f"""
-            <div style="background:#262730; padding:1rem; border-radius:0.5rem; margin:0.5rem 0; border-left:4px solid #00d4aa;">
-                <h4 style="color:#00d4aa; margin:0 0 0.5rem 0;">{title}</h4>
+            <div style="background:#262730; padding:1rem; border-radius:0.5rem; margin:0 0 1rem 0; border-left:4px solid #00d4aa;">
                 <p style="color:#b0b0b0; margin:0; font-size:0.9rem;">{desc}</p>
             </div>
             """, unsafe_allow_html=True)
+
+    if not filtered_tools:
+        st.info("No tools found matching your search.")
 
     st.markdown("---")
     st.markdown("### ✨ Features")
@@ -117,51 +144,37 @@ def main():
     st.markdown('<div class="main-header">DevTools Hub</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">Professional, free developer utilities</div>', unsafe_allow_html=True)
 
-    # Sidebar navigation
-    st.sidebar.title("🔧 Developer Tools")
-    st.sidebar.markdown("---")
-
-    tools_menu = {
-        "🏠 Home": "home",
-        "🔑 JWT Decoder": "jwt",
-        "📝 JSON Formatter": "json",
-        "⏰ Timestamp Converter": "timestamp",
-        "🆔 UUID Generator": "uuid",
-        "🔤 Base64 Converter": "base64",
-        "🔗 URL Encoder": "url",
-        "🔍 Regex Tester": "regex",
-        "📄 Markdown Converter": "markdown",
-        "🎨 Color Palette": "color",
-        "🤖 Robots.txt Generator": "robots"
-    }
-
-    selected = st.sidebar.selectbox("Choose a tool:", list(tools_menu.keys()))
-    tool_key = tools_menu[selected]
+    # Back to home button (only show when not on home)
+    if st.session_state.current_tool != 'home':
+        if st.button("← Back to Home", key="back_home"):
+            st.session_state.current_tool = 'home'
+            st.rerun()
 
     # 4. Wrap each tool render in a styled div
     st.markdown('<div class="tool-card">', unsafe_allow_html=True)
 
-    if tool_key == "home":
+    # Route to current tool
+    if st.session_state.current_tool == 'home':
         render_home_page()
-    elif tool_key == "jwt":
+    elif st.session_state.current_tool == 'jwt':
         jwt_decoder.render()
-    elif tool_key == "json":
+    elif st.session_state.current_tool == 'json':
         json_formatter.render()
-    elif tool_key == "timestamp":
+    elif st.session_state.current_tool == 'timestamp':
         timestamp_converter.render()
-    elif tool_key == "uuid":
+    elif st.session_state.current_tool == 'uuid':
         uuid_generator.render()
-    elif tool_key == "base64":
+    elif st.session_state.current_tool == 'base64':
         base64_converter.render()
-    elif tool_key == "url":
+    elif st.session_state.current_tool == 'url':
         url_encoder.render()
-    elif tool_key == "regex":
+    elif st.session_state.current_tool == 'regex':
         regex_tester.render()
-    elif tool_key == "markdown":
+    elif st.session_state.current_tool == 'markdown':
         markdown_converter.render()
-    elif tool_key == "color":
+    elif st.session_state.current_tool == 'color':
         color_palette.render()
-    elif tool_key == "robots":
+    elif st.session_state.current_tool == 'robots':
         robots_generator.render()
 
     st.markdown('</div>', unsafe_allow_html=True)
