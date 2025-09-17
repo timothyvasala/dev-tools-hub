@@ -118,11 +118,9 @@ def render_home_page():
 
         with col:
             # Create a tall, styled button with title and description
-            button_content = f"""**{title}**
+            button_content = f"""### {title}
 
-{desc}
-
-*Click to open →*"""
+{desc}"""
 
             if st.button(button_content, key=f"btn_{key}", use_container_width=True):
                 st.session_state.current_tool = key
