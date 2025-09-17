@@ -1,4 +1,5 @@
 streamlit>=1.28.0
 PyJWT>=2.8.0
-regex>=2025.9.1
+regex>=2023.12.25
 markdown2>=2.4.10
+pillow>=10.0.0

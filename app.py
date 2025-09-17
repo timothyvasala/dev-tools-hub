@@ -2,6 +2,9 @@ import streamlit as st
 import sys
 from pathlib import Path
 
+# Version info
+__version__ = "1.0.0"
+
 # Ensure project root is in path
 sys.path.append(str(Path(__file__).parent))
 
