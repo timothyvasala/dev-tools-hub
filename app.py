@@ -166,7 +166,7 @@ def main():
             st.rerun()
 
     # 4. Wrap each tool render in a styled div
-    st.markdown('<div class="tool-card">', unsafe_help_html=True)
+    st.markdown('<div class="tool-card">', unsafe_allow_html=True)
 
     # Route to current tool
     if st.session_state.current_tool == 'home':
