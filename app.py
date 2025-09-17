@@ -44,6 +44,11 @@ st.markdown(
         height:auto !important;
         transition: all 0.3s ease !important;
       }
+      .stButton > button strong {
+        font-size: 1.3rem !important;
+        color: #00d4aa !important;
+    }
+
       .stButton > button:hover {
         transform: translateY(-3px) !important;
         box-shadow: 0 6px 20px rgba(0, 212, 170, 0.3) !important;
@@ -118,7 +123,7 @@ def render_home_page():
 
         with col:
             # Create a tall, styled button with title and description
-            button_content = f"""### {title}
+            button_content = f"""**{title}**
 
 {desc}"""
 
