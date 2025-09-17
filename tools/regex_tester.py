@@ -1,339 +1,288 @@
 import streamlit as st
 import re
-import pandas as pd
-from io import StringIO
 import json
 import time
 
-def show_regex_tester():
+def render():
     """
-    Enhanced Regex Tester - No caching issues, works guaranteed!
+    Professional Regex Tester - Matches industry standards like regex101.com and regexr.com
     """
 
     st.title("🔍 Regex Tester")
-    st.markdown("*Test and debug regular expressions with sample text*")
+    st.markdown("*Test and debug regular expressions with real-time highlighting*")
 
-    # Create columns for better layout
-    col1, col2 = st.columns([2, 1])
+    # Create two-column layout like professional tools
+    col1, col2 = st.columns([3, 2])
 
     with col1:
-        # Input method tabs
-        tab1, tab2, tab3 = st.tabs(["📝 Single Text", "📄 Bulk Text", "📁 File Upload"])
+        # Pattern input with quick examples
+        st.subheader("🎯 Regular Expression")
 
-        texts_to_test = []
-
-        with tab1:
-            pattern = st.text_input(
-                "**Enter regex pattern:**",
-                value="",
-                placeholder="\\d+",
-                help="Enter your regular expression pattern"
-            )
-
-            test_text = st.text_area(
-                "**Sample text to test against:**",
-                value="Testing 123 with numbers 456 and text. Email: john@example.com Phone: 123-456-7890",
-                height=120,
-                help="Enter your text to test the regex pattern against"
-            )
-
-            if test_text:
-                texts_to_test = [test_text]
-
-        with tab2:
-            pattern_bulk = st.text_input(
-                "**Enter regex pattern:**",
-                value="",
-                placeholder="\\d+",
-                key="bulk_pattern"
-            )
-
-            bulk_text = st.text_area(
-                "**Multiple texts (separate with double newlines):**",
-                placeholder="Text 1 here\n\nText 2 here\n\nText 3 here",
-                height=150,
-                key="bulk_input"
-            )
-
-            if bulk_text:
-                texts_to_test = [text.strip() for text in bulk_text.split('\n\n') if text.strip()]
-                pattern = pattern_bulk
-
-        with tab3:
-            pattern_file = st.text_input(
-                "**Enter regex pattern:**",
-                value="",
-                placeholder="\\d+",
-                key="file_pattern"
-            )
-
-            uploaded_file = st.file_uploader(
-                "**Upload text file:**",
-                type=['txt', 'csv', 'log', 'py', 'js', 'html'],
-                help="Upload a text file to test regex against"
-            )
-
-            if uploaded_file:
-                try:
-                    content = StringIO(uploaded_file.getvalue().decode("utf-8")).read()
-                    texts_to_test = [content]
-                    pattern = pattern_file
-                    st.info(f"✅ File loaded: {uploaded_file.name} ({len(content)} characters)")
-                except Exception as e:
-                    st.error(f"❌ Error reading file: {e}")
-
-    with col2:
-        st.subheader("⚙️ Options")
-
-        # Regex flags
-        flags = 0
-        flag_options = st.multiselect(
-            "**Regex Flags:**",
-            ["Case Insensitive (i)", "Multiline (m)", "Dot All (s)", "Verbose (x)"],
-            help="Select regex flags to apply"
-        )
-
-        if "Case Insensitive (i)" in flag_options:
-            flags |= re.IGNORECASE
-        if "Multiline (m)" in flag_options:
-            flags |= re.MULTILINE
-        if "Dot All (s)" in flag_options:
-            flags |= re.DOTALL
-        if "Verbose (x)" in flag_options:
-            flags |= re.VERBOSE
-
-        # Quick patterns
-        st.subheader("🎯 Quick Patterns")
+        # Quick pattern selection
         quick_patterns = {
-            "Numbers": r'\d+',
-            "Words": r'\b\w+\b',
-            "Email": r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
-            "Phone (US)": r'\b\d{3}-\d{3}-\d{4}\b',
-            "URL": r'https?://[^\s]+',
-            "IPv4": r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b',
+            "Custom Pattern": "",
+            "Email Address": r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
+            "Phone Number (US)": r'\b\d{3}-\d{3}-\d{4}\b',
+            "URL/Website": r'https?://[^\s]+',
+            "Numbers Only": r'\d+',
+            "Words Only": r'\b[a-zA-Z]+\b',
+            "IPv4 Address": r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b',
             "Date (YYYY-MM-DD)": r'\d{4}-\d{2}-\d{2}',
+            "Hexadecimal Color": r'#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})',
         }
 
-        selected_pattern = st.selectbox("Choose preset:", ["Custom"] + list(quick_patterns.keys()))
-        if selected_pattern != "Custom":
-            pattern = quick_patterns[selected_pattern]
-            st.code(pattern, language="regex")
+        selected_example = st.selectbox("Choose a pattern or enter custom:", list(quick_patterns.keys()))
 
-    # Main processing section
+        if selected_example == "Custom Pattern":
+            pattern = st.text_input(
+                "Enter your regex pattern:",
+                value="",
+                placeholder="\\d+ or [a-zA-Z]+ or \\b\\w+@\\w+\\.\\w+\\b",
+                help="Enter your regular expression pattern"
+            )
+        else:
+            pattern = st.text_input(
+                "Regex pattern:",
+                value=quick_patterns[selected_example],
+                help=f"Pre-filled pattern for {selected_example}"
+            )
+
+        # Test string input
+        st.subheader("📝 Test String")
+        test_string = st.text_area(
+            "Enter text to test against:",
+            value="Sample text: Contact john@example.com or call 123-456-7890. Visit https://example.com or check IP 192.168.1.1. Today is 2024-09-17 and color is #FF5733.",
+            height=120,
+            help="Enter the text you want to test your regex pattern against"
+        )
+
+    with col2:
+        # Regex flags (like regex101.com)
+        st.subheader("⚙️ Flags")
+
+        flags = 0
+        flag_g = st.checkbox("🌐 Global (g)", value=True, help="Find all matches, not just the first")
+        flag_i = st.checkbox("🔤 Ignore Case (i)", value=False, help="Case-insensitive matching")
+        flag_m = st.checkbox("📄 Multiline (m)", value=False, help="^ and $ match line boundaries")
+        flag_s = st.checkbox("🔘 Dot All (s)", value=False, help=". matches newline characters")
+
+        if flag_i:
+            flags |= re.IGNORECASE
+        if flag_m:
+            flags |= re.MULTILINE
+        if flag_s:
+            flags |= re.DOTALL
+
+        # Function selection
+        st.subheader("🔧 Function")
+        function_type = st.selectbox(
+            "Regex function:",
+            ["Match", "Search", "Find All", "Split", "Substitute"],
+            help="Choose what operation to perform"
+        )
+
+        if function_type == "Substitute":
+            replacement = st.text_input("Replacement:", value="[MATCH]", help="Replacement string for substitution")
+
+    # Processing section
     st.markdown("---")
 
+    # Test button
     if st.button("🚀 Test Regex", type="primary", use_container_width=True):
         if not pattern:
             st.error("❌ Please enter a regex pattern!")
             return
 
-        if not texts_to_test:
-            st.error("❌ Please enter some text to test!")
+        if not test_string:
+            st.error("❌ Please enter test text!")
             return
 
-        # Process without ANY caching - this is the key fix!
         try:
-            # Create progress bar for multiple texts
-            if len(texts_to_test) > 1:
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-
-            # Compile pattern fresh each time (NO CACHE!)
+            # Compile pattern (no caching to avoid errors)
             compiled_pattern = re.compile(pattern, flags)
 
-            all_results = []
-            total_matches = 0
+            # Execute based on function type
+            if function_type == "Match":
+                match = compiled_pattern.match(test_string)
+                if match:
+                    st.success(f"✅ **Match found!** `{match.group()}`")
+                    st.info(f"📍 Position: {match.start()}-{match.end()}")
+                else:
+                    st.warning("🔍 No match at string beginning")
 
-            for idx, text in enumerate(texts_to_test):
-                # Update progress
-                if len(texts_to_test) > 1:
-                    progress_bar.progress((idx + 1) / len(texts_to_test))
-                    status_text.text(f"Processing text {idx + 1} of {len(texts_to_test)}...")
+            elif function_type == "Search":
+                match = compiled_pattern.search(test_string)
+                if match:
+                    st.success(f"✅ **First match found!** `{match.group()}`")
+                    st.info(f"📍 Position: {match.start()}-{match.end()}")
+                else:
+                    st.warning("🔍 No match found anywhere")
 
-                # Find matches - direct execution, no caching
-                matches = compiled_pattern.findall(text)
-                match_objects = list(compiled_pattern.finditer(text))
+            elif function_type == "Find All":
+                matches = compiled_pattern.findall(test_string)
+                if matches:
+                    st.success(f"✅ **Found {len(matches)} matches!**")
 
-                result = {
-                    "text_index": idx + 1,
-                    "text_preview": text[:100] + "..." if len(text) > 100 else text,
-                    "full_text": text,
-                    "match_count": len(matches),
-                    "matches": matches,
-                    "positions": [(m.start(), m.end(), m.group()) for m in match_objects]
-                }
-                all_results.append(result)
-                total_matches += len(matches)
+                    # Display matches in a nice format
+                    for i, match in enumerate(matches, 1):
+                        st.write(f"**Match {i}:** `{match}`")
 
-            # Clear progress indicators
-            if len(texts_to_test) > 1:
-                progress_bar.empty()
-                status_text.empty()
+                    # Get detailed match information
+                    match_objects = list(compiled_pattern.finditer(test_string))
 
-            # Display results
-            if total_matches == 0:
-                st.warning("🔍 No matches found!")
-                st.info("💡 Try adjusting your regex pattern or check your text.")
-            else:
-                st.success(f"✅ Found **{total_matches}** total matches across **{len(texts_to_test)}** text(s)!")
+                    # Create results table
+                    if match_objects:
+                        st.subheader("📊 Match Details")
+                        results_data = []
+                        for i, match in enumerate(match_objects, 1):
+                            results_data.append({
+                                "Match #": i,
+                                "Text": match.group(),
+                                "Start": match.start(),
+                                "End": match.end(),
+                                "Length": len(match.group())
+                            })
 
-                # Results display tabs
-                result_tab1, result_tab2, result_tab3 = st.tabs(["📊 Summary", "🔍 Matches", "💾 Export"])
+                        st.table(results_data)
 
-                with result_tab1:
-                    # Statistics
-                    col1, col2, col3, col4 = st.columns(4)
-                    with col1:
-                        st.metric("Total Matches", total_matches)
-                    with col2:
-                        st.metric("Texts Processed", len(texts_to_test))
-                    with col3:
-                        st.metric("Pattern Length", len(pattern))
-                    with col4:
-                        avg_matches = total_matches / len(texts_to_test)
-                        st.metric("Avg per Text", f"{avg_matches:.1f}")
+                        # Export functionality
+                        st.subheader("💾 Export Results")
 
-                    # Pattern info
-                    st.subheader("🎯 Pattern Analysis")
-                    st.code(pattern, language="regex")
+                        col1, col2, col3 = st.columns(3)
 
-                    if flags:
-                        flag_names = []
-                        if flags & re.IGNORECASE: flag_names.append("Case Insensitive")
-                        if flags & re.MULTILINE: flag_names.append("Multiline")
-                        if flags & re.DOTALL: flag_names.append("Dot All")
-                        if flags & re.VERBOSE: flag_names.append("Verbose")
-                        st.write(f"**Flags:** {', '.join(flag_names)}")
-
-                with result_tab2:
-                    # Detailed match results
-                    for result in all_results:
-                        if result["match_count"] > 0:
-                            with st.expander(f"📄 Text {result['text_index']} - {result['match_count']} matches", expanded=len(all_results)==1):
-                                st.write(f"**Text Preview:** {result['text_preview']}")
-
-                                # Show matches in a nice format
-                                for i, (start, end, match) in enumerate(result["positions"], 1):
-                                    col1, col2, col3 = st.columns([2, 1, 1])
-                                    with col1:
-                                        st.code(match, language="text")
-                                    with col2:
-                                        st.write(f"Start: {start}")
-                                    with col3:
-                                        st.write(f"End: {end}")
-
-                with result_tab3:
-                    # Export functionality
-                    export_data = {
-                        "pattern": pattern,
-                        "flags": flags,
-                        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-                        "total_matches": total_matches,
-                        "results": [
-                            {
-                                "text_index": r["text_index"],
-                                "match_count": r["match_count"],
-                                "matches": r["matches"],
-                                "positions": r["positions"]
-                            } for r in all_results
-                        ]
-                    }
-
-                    col1, col2, col3 = st.columns(3)
-
-                    with col1:
-                        # JSON Export
-                        json_str = json.dumps(export_data, indent=2)
-                        st.download_button(
-                            label="📋 Download JSON",
-                            data=json_str,
-                            file_name=f"regex_results_{int(time.time())}.json",
-                            mime="application/json",
-                            use_container_width=True
-                        )
-
-                    with col2:
-                        # CSV Export
-                        csv_data = []
-                        for result in all_results:
-                            for start, end, match in result["positions"]:
-                                csv_data.append({
-                                    "text_index": result["text_index"],
-                                    "match": match,
-                                    "start": start,
-                                    "end": end,
-                                    "length": len(match)
-                                })
-
-                        if csv_data:
-                            df = pd.DataFrame(csv_data)
-                            csv_str = df.to_csv(index=False)
+                        with col1:
+                            # JSON export
+                            export_data = {
+                                "pattern": pattern,
+                                "flags": flags,
+                                "test_string": test_string,
+                                "matches": matches,
+                                "match_details": results_data,
+                                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                            }
+                            json_str = json.dumps(export_data, indent=2)
                             st.download_button(
-                                label="📊 Download CSV",
-                                data=csv_str,
-                                file_name=f"regex_matches_{int(time.time())}.csv",
-                                mime="text/csv",
-                                use_container_width=True
+                                "📋 JSON",
+                                data=json_str,
+                                file_name="regex_results.json",
+                                mime="application/json"
                             )
 
-                    with col3:
-                        # Python Code Export
-                        python_code = f'''import re
+                        with col2:
+                            # Python code export
+                            python_code = f'''import re
 
-# Generated regex pattern
+# Regex pattern
 pattern = r"{pattern}"
 flags = {flags}
 
-# Compile pattern
-compiled_pattern = re.compile(pattern, flags)
+# Test string
+test_string = """{test_string}"""
 
-# Example usage
-text = "Your text here"
-matches = compiled_pattern.findall(text)
-print(f"Found {{len(matches)}} matches: {{matches}}")
+# Compile and execute
+compiled_pattern = re.compile(pattern, flags)
+matches = compiled_pattern.findall(test_string)
+
+print(f"Found {{len(matches)}} matches:")
+for i, match in enumerate(matches, 1):
+    print(f"Match {{i}}: {{match}}")
 '''
-                        st.download_button(
-                            label="🐍 Download Python",
-                            data=python_code,
-                            file_name=f"regex_code_{int(time.time())}.py",
-                            mime="text/python",
-                            use_container_width=True
-                        )
+                            st.download_button(
+                                "🐍 Python",
+                                data=python_code,
+                                file_name="regex_code.py",
+                                mime="text/python"
+                            )
+
+                        with col3:
+                            # Text export
+                            text_output = f"Regex Pattern: {pattern}\nTest String: {test_string}\n\nMatches Found: {len(matches)}\n\n"
+                            for i, match in enumerate(matches, 1):
+                                text_output += f"Match {i}: {match}\n"
+
+                            st.download_button(
+                                "📄 Text",
+                                data=text_output,
+                                file_name="regex_results.txt",
+                                mime="text/plain"
+                            )
+                else:
+                    st.warning("🔍 No matches found")
+
+            elif function_type == "Split":
+                parts = compiled_pattern.split(test_string)
+                st.success(f"✅ **Split into {len(parts)} parts:**")
+                for i, part in enumerate(parts, 1):
+                    if part:  # Only show non-empty parts
+                        st.write(f"**Part {i}:** `{part}`")
+
+            elif function_type == "Substitute":
+                result = compiled_pattern.sub(replacement, test_string)
+                st.success("✅ **Substitution result:**")
+                st.code(result, language="text")
+
+                # Show number of replacements
+                count = len(compiled_pattern.findall(test_string))
+                st.info(f"📊 Made {count} replacement(s)")
 
         except re.error as e:
-            st.error(f"❌ Invalid regex pattern: {str(e)}")
+            st.error(f"❌ **Invalid regex pattern:** {str(e)}")
+            st.info("💡 Check your pattern syntax and try again")
         except Exception as e:
-            st.error(f"❌ Processing error: {str(e)}")
+            st.error(f"❌ **Error:** {str(e)}")
 
-    # Help section
-    with st.expander("📚 Regex Help & Examples"):
-        st.markdown("""
-        ### 🎯 Common Patterns:
+    # Help section (like regex101.com)
+    with st.expander("📚 Regex Reference & Help"):
+        col1, col2 = st.columns(2)
 
-        | Pattern | Matches | Example |
-        |---------|---------|---------|
-        | `\\d+` | One or more digits | `123`, `456` |
-        | `[a-zA-Z]+` | Letters only | `hello`, `World` |
-        | `\\w+` | Word characters | `hello123`, `test_var` |
-        | `\\s+` | Whitespace | spaces, tabs, newlines |
-        | `.*` | Any characters | everything |
-        | `^` | Start of line | beginning |
-        | `$` | End of line | ending |
-        | `\\b` | Word boundary | whole words only |
+        with col1:
+            st.markdown("""
+            ### 🎯 **Common Patterns**
+            | Pattern | Matches |
+            |---------|---------|
+            | `\\d` | Any digit (0-9) |
+            | `\\w` | Word character (a-z, A-Z, 0-9, _) |
+            | `\\s` | Whitespace (space, tab, newline) |
+            | `.` | Any character (except newline) |
+            | `^` | Start of string/line |
+            | `$` | End of string/line |
+            | `\\b` | Word boundary |
 
-        ### 🚩 Flags:
-        - **Case Insensitive (i):** `Hello` matches `hello`
-        - **Multiline (m):** `^` and `$` match line boundaries
-        - **Dot All (s):** `.` matches newline characters
-        - **Verbose (x):** Allow whitespace and comments in pattern
+            ### 🔢 **Quantifiers**
+            | Pattern | Matches |
+            |---------|---------|
+            | `*` | 0 or more |
+            | `+` | 1 or more |
+            | `?` | 0 or 1 |
+            | `{n}` | Exactly n |
+            | `{n,m}` | Between n and m |
+            """)
 
-        ### 💡 Tips:
-        - Test with simple patterns first
-        - Use word boundaries `\\b` for exact word matches
-        - Escape special characters with backslash `\\`
-        - Use parentheses `()` for grouping
-        """)
+        with col2:
+            st.markdown("""
+            ### 📦 **Groups & Classes**
+            | Pattern | Matches |
+            |---------|---------|
+            | `[abc]` | Any of a, b, or c |
+            | `[^abc]` | Not a, b, or c |
+            | `[a-z]` | Any lowercase letter |
+            | `[A-Z]` | Any uppercase letter |
+            | `[0-9]` | Any digit |
+            | `(abc)` | Group |
+            | `(?:abc)` | Non-capturing group |
 
-# Run the function if called directly
+            ### 🚩 **Flags**
+            | Flag | Effect |
+            |------|--------|
+            | `i` | Ignore case |
+            | `m` | Multiline mode |
+            | `s` | Dot matches newline |
+            | `g` | Global (find all) |
+            """)
+
+# Alternative function name for compatibility
+def show_regex_tester():
+    render()
+
 if __name__ == "__main__":
-    show_regex_tester()
+    render()
