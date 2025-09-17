@@ -36,6 +36,23 @@ st.markdown(
 )
 # ────────────────────────────────────────────────────────────────────────────────
 
+# ── SEO & Social Metadata ──────────────────────────────────────────────────────
+st.markdown(
+    """
+    <meta property="og:title" content="DevTools Hub – Free Developer Utilities" />
+    <meta property="og:description" content="Professional developer tools: JWT decoder, JSON formatter, Base64 converter, and more. Free & unlimited usage." />
+    <meta property="og:image" content="https://raw.githubusercontent.com/timothyvasala/dev-tools-hub/main/static/devtools-logo.png" />
+    <meta property="og:url" content="https://devtools-hub.streamlit.app" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DevTools Hub – Free Developer Utilities" />
+    <meta name="twitter:description" content="Professional developer tools: JWT decoder, JSON formatter, Base64 converter, and more." />
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/timothyvasala/dev-tools-hub/main/static/devtools-logo.png" />
+    """,
+    unsafe_allow_html=True
+)
+# ────────────────────────────────────────────────────────────────────────────────
+
 def main():
     # 3. Use your styled headers
     st.markdown('<div class="main-header">DevTools Hub</div>', unsafe_allow_html=True)
