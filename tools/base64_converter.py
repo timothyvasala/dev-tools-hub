@@ -77,4 +77,4 @@ def render():
                 st.error(f"❌ Decoding error: {e}")
 
     # 7. Footer
-    add_footer()
+    # add_footer()

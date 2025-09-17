@@ -46,4 +46,4 @@ def render():
         )
 
     # 4. Footer
-    add_footer()
+    # add_footer()

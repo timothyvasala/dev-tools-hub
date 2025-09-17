@@ -68,4 +68,4 @@ def render():
         st.download_button("Download code", code, "regex_test.py", "text/x-python")
 
     # 6. Footer
-    add_footer()
+    # add_footer()

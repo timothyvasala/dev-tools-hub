@@ -50,4 +50,4 @@ def render():
                 st.error(f"❌ Conversion error: {e}")
 
     # 4. Footer
-    add_footer()
+    # add_footer()

@@ -82,4 +82,4 @@ def render():
             st.error(f"❌ Error Minifying JSON: {e}")
 
     # 5. Footer
-    add_footer()
+    # add_footer()

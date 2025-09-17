@@ -67,4 +67,4 @@ def render():
                 st.error(f"❌ {e}")
 
     # 4. Footer
-    add_footer()
+    # add_footer()

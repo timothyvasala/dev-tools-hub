@@ -120,4 +120,4 @@ def render():
                    "- AAA Large text: ≥4.5:1")
 
     # Footer
-    add_footer()
+    # add_footer()

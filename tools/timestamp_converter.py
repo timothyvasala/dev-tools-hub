@@ -91,4 +91,4 @@ def render():
             st.write(now_ts)
 
     # 4. Footer
-    add_footer()
+    # add_footer()
