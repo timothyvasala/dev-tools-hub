@@ -4,6 +4,11 @@ import json
 import base64
 from utils.common import setup_page, show_result, handle_file_upload, add_footer
 
+# ── Input Limits for JWT Tokens ───────────────────────────────────────────────
+MAX_TOKEN_LENGTH = 5000       # maximum characters per token
+MAX_TOKENS_BULK = 50          # maximum tokens in bulk mode
+# ──────────────────────────────────────────────────────────────────────────────
+
 # ── Cache JWT decoding ─────────────────────────────────────────────────────────
 @st.cache_data(show_spinner=False)
 def decode_jwt(token: str) -> tuple[dict, dict]:
@@ -57,7 +62,17 @@ def render():
 
     # 3. Decode button
     if tokens and st.button("🔓 Decode"):
+        # Enforce bulk token count limit
+        if len(tokens) > MAX_TOKENS_BULK:
+            st.error(f"❌ Too many tokens ({len(tokens)}). Max allowed in bulk is {MAX_TOKENS_BULK}.")
+            return
+
         for idx, token in enumerate(tokens, 1):
+            # Enforce individual token length limit
+            if len(token) > MAX_TOKEN_LENGTH:
+                st.error(f"❌ Token #{idx} too long ({len(token)} chars). Max allowed is {MAX_TOKEN_LENGTH}.")
+                return
+
             st.markdown(f"**Token #{idx}:**")
             try:
                 header, payload = decode_jwt(token)

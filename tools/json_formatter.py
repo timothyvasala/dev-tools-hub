@@ -1,15 +1,62 @@
 import streamlit as st
 import json
 from utils.common import setup_page, show_result, handle_file_upload, validate_input, add_footer
+import sys
+from functools import wraps
+
+# ── Security wrapper for JSON operations ─────────────────────────────────────
+def json_security_check(data: str, max_size_mb=10, max_depth=50):
+    """
+    Security validation for JSON data to prevent JSON bombs and large payload attacks.
+
+    Args:
+        data: The JSON string to validate
+        max_size_mb: Maximum size in megabytes (default: 10MB)
+        max_depth: Maximum nesting depth (default: 50 levels)
+
+    Raises:
+        ValueError: If data fails security checks
+    """
+    # Check size first (fast check)
+    size_mb = len(data.encode('utf-8')) / (1024 * 1024)
+    if size_mb > max_size_mb:
+        raise ValueError(f"JSON too large: {size_mb:.1f}MB (max: {max_size_mb}MB)")
+
+    # Parse and check depth (slower but necessary)
+    try:
+        parsed_data = json.loads(data)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON: {str(e)}")
+
+    def check_depth(obj, current_depth=0):
+        if current_depth > max_depth:
+            raise ValueError(f"JSON too deeply nested: {current_depth} levels (max: {max_depth})")
+
+        if isinstance(obj, dict):
+            for value in obj.values():
+                check_depth(value, current_depth + 1)
+        elif isinstance(obj, list):
+            for item in obj:
+                check_depth(item, current_depth + 1)
+
+    check_depth(parsed_data)
+    return True  # All checks passed
+# ──────────────────────────────────────────────────────────────────────────────
 
 # ── Cache heavy JSON operations ─────────────────────────────────────────────────
 @st.cache_data(show_spinner=False)
 def format_json(data: str, indent: int, sort_keys: bool, ensure_ascii: bool) -> str:
+    # Security check first
+    json_security_check(data)
+
     parsed = json.loads(data)
     return json.dumps(parsed, indent=indent, sort_keys=sort_keys, ensure_ascii=ensure_ascii)
 
 @st.cache_data(show_spinner=False)
 def minify_json(data: str) -> str:
+    # Security check first
+    json_security_check(data)
+
     parsed = json.loads(data)
     return json.dumps(parsed, separators=(',', ':'))
 # ────────────────────────────────────────────────────────────────────────────────

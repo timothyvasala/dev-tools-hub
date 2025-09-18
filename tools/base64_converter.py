@@ -2,6 +2,25 @@ import streamlit as st
 import base64
 from utils.common import setup_page, show_result, handle_file_upload, validate_input, add_footer
 
+# ── File Type Security ─────────────────────────────────────────────────────────
+ALLOWED_FILE_EXTENSIONS = ['.txt', '.json', '.csv', '.md', '.py', '.js', '.html', '.css', '.xml', '.yaml', '.yml']
+MAX_FILE_SIZE_MB = 5
+
+def validate_file_for_encoding(filename: str, size_bytes: int):
+    """Basic file validation for Base64 encoding"""
+    import os
+
+    # Check file extension
+    _, ext = os.path.splitext(filename.lower())
+    if ext not in ALLOWED_FILE_EXTENSIONS:
+        raise ValueError(f"File type '{ext}' not allowed. Allowed: {', '.join(ALLOWED_FILE_EXTENSIONS)}")
+
+    # Check file size
+    size_mb = size_bytes / (1024 * 1024)
+    if size_mb > MAX_FILE_SIZE_MB:
+        raise ValueError(f"File too large: {size_mb:.1f}MB (max: {MAX_FILE_SIZE_MB}MB)")
+# ──────────────────────────────────────────────────────────────────────────────
+
 # ── Cache Base64 operations ────────────────────────────────────────────────────
 @st.cache_data(show_spinner=False)
 def encode_text(data: str) -> str:
