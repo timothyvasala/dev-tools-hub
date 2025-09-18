@@ -26,58 +26,59 @@ def sanitize_html(html: str) -> str:
         attributes=ALLOWED_ATTRS,
         strip=True
     )
-# ──────────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────────
 
-# ── Cache Markdown conversion ──────────────────────────────────────────────────
 @st.cache_data(show_spinner=False)
 def convert_markdown_to_html(md_text: str) -> str:
     """Convert Markdown text to HTML."""
     return markdown2.markdown(md_text)
-# ────────────────────────────────────────────────────────────────────────────────
 
 def render():
-    # 1. Header
     setup_page(
         "📄 Markdown → HTML Converter",
         "Convert Markdown text or files into HTML code."
     )
 
-    # 2. Input method
-    method = st.radio("Input method:", ["Paste Markdown", "Upload File"])
-    md_text = ""
+    raw_md = ""
 
-    if method == "Paste Markdown":
-        md_text = st.text_area(
-            "Enter Markdown content:", height=200,
-            placeholder="# Title\n\nSome **bold** text."
-        )
-    else:
-        content = handle_file_upload(["md", "txt"], max_mb=10)
-        if content:
-            md_text = content
-
-    # 3. Convert button
-    if md_text and st.button("🔄 Convert to HTML"):
-        valid, msg = validate_input(md_text, min_len=2)
-        if not valid:
-            st.error(f"❌ {msg}")
+    # Wrap inputs and buttons in a form so buttons are always visible
+    with st.form("md_form", clear_on_submit=False):
+        method = st.radio("Input method:", ["Paste Markdown", "Upload File"], key="md_method")
+        if method == "Paste Markdown":
+            raw_md = st.text_area(
+                "Enter Markdown content:", height=200,
+                placeholder="# Title\n\nSome **bold** text.", key="md_paste"
+            )
         else:
-            try:
-                # Convert Markdown to raw HTML
-                raw_html = convert_markdown_to_html(md_text)
-                # Sanitize the HTML output
-                clean_html = sanitize_html(raw_html)
+            content = handle_file_upload(["md", "txt"], max_mb=10)
+            if content:
+                raw_md = content
 
-                st.success("✅ Conversion successful!")
-                show_result(clean_html, language="html")
-                st.download_button(
-                    label="📥 Download HTML",
-                    data=clean_html,
-                    file_name="converted.html",
-                    mime="text/html"
-                )
-            except Exception as e:
-                st.error(f"❌ Conversion error: {e}")
+        convert_btn = st.form_submit_button("🔄 Convert to HTML")
 
-    # 4. Footer
+    if convert_btn:
+        if not raw_md or not raw_md.strip():
+            st.error("❌ Please enter or upload some Markdown before converting.")
+        else:
+            is_valid, msg = validate_input(raw_md, min_len=2)
+            if not is_valid:
+                st.error(f"❌ {msg}")
+            else:
+                try:
+                    raw_html = convert_markdown_to_html(raw_md)
+                    clean_html = sanitize_html(raw_html)
+                    st.success("✅ Conversion successful!")
+                    show_result(clean_html, language="html")
+                    st.download_button(
+                        label="📥 Download HTML",
+                        data=clean_html,
+                        file_name="converted.html",
+                        mime="text/html"
+                    )
+                except Exception as e:
+                    st.error(f"❌ Conversion error: {e}")
+
     # add_footer()
+
+if __name__ == "__main__":
+    render()
